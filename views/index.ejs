@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Web Sockets Chat</title>
+    <!-- link for JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <!-- Boostrap CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <!-- Socket Link -->
+    <script type ="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script type ="text/javascript"></script>  
+    <script>
+        var socket = io()
+        
+        $(function(){
+            
+            // Prompt user to enter name and store in person variable
+            var user = prompt("Hello and Welcome. Please enter your name");
+            
+            // emit person variable  to server
+            socket.emit('new_user', user);
+            console.log(user)
+            
+            // Listen for allusers event sent from server via socket
+            socket.on('allusers', function(data){
+                var user_list = '';
+                for ( var i = 0; i < data.length; i++){
+                    user_list += '<p>' + data[i] + '</p>';
+                }
+                $('#user').html(user_list)
+                $('#current').html('Welcome ' + user)
+            })
+
+            // Retrieve the chat message from client page
+            // Emit to Server via socket
+            $('#send').click(function(){
+                socket.emit('new_msg', $('#chat_msg').val(), user)
+                $('#chat_msg').val('')
+            })
+
+            $('#chat_msg').keydown(function(event){
+                if(event.which == 13){
+                    event.preventDefault();
+                    socket.emit('new_msg', $('#chat_msg').val(), user)
+                    $('#chat_msg').val('')
+                }
+            })
+
+            socket.on('msg', function(data){
+                $('#message').append('<p style="background-color: white; border-radius:10px; padding-left: 5px;><span  class="text-capitalize; min-width:0px;">'+ data.user +'</span> said: '+ data.msg + '</p>')
+                $('#output').scrollTop($('#message').height())
+               
+            })
+        });
+        
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="show_users" style="width: 17%; display: inline-block; vertical-align: top;">
+            <h1>All Users</h1>
+            <ul>
+                <h5 id="user" class="text-capitalize"></h5>
+            </ul>
+        </div>
+        <div id="chatroom" style=" display: inline-block; vertical-align: top; width: 70%;">
+                <h1>Chat Room </h1> <h5 class="text-capitalize" id= "current"></h5>
+            
+            <div id="window">
+                <div id="output" style="padding: 10px;overflow-y: scroll; height: 500px; background-color: rgb(243, 242, 242); border: solid 1px rgb(211, 211, 211); margin-bottom: 3px;">
+                    <div id="message"></div>
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <textarea class="form-control" id ="chat_msg"aria-label="With textarea"></textarea>
+                <div class="input-group-append">
+                    <button type="button" id="send" class="btn btn-outline-secondary">Send Message</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
