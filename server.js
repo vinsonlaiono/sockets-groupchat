@@ -76,6 +76,11 @@ io.on('connection', function(socket){
 
 // Render chatroom ejs page
 app.get('/', function(req, res) {
-    
-    res.render("index.ejs");
+    res.render("home.ejs");
 });
+app.post('/login', (req, res) => {
+    res.redirect('/home')
+})
+app.get('/home', (req, res) => {
+    res.render('index.ejs')
+})
